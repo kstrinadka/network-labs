@@ -55,7 +55,8 @@ public class MulticastReceiver implements Runnable {
                 String received = new String(
                         packet.getData(), 0, packet.getLength());
 
-                String hostName = packet.getAddress().getHostAddress();
+
+                String hostName = packet.getAddress().getHostAddress() + packet.getPort();
 
                 if (!hostsMap.containsKey(hostName)) {
                     System.out.println("added new host: " + hostName);

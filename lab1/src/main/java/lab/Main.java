@@ -28,8 +28,9 @@ import java.util.logging.Logger;
 public class Main {
     private static final Logger logger = Logger.getLogger(lab.Main.class.getName());
 
-    private static final int DEFAULT_PORT = 1333;
+    private static final int DEFAULT_PORT = 6060;
     private static final String DEFAULT_IP = "225.0.0.0";
+    private static final String DEFAULT_IPV6 = "FF02::1";
 
     public static void main(String[] args) throws IOException {
 

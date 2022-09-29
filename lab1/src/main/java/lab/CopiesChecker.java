@@ -63,6 +63,7 @@ public class CopiesChecker implements Runnable{
                         System.out.println("host: " + host + " was deleted");
                         hostsMap.remove(host);
                         showAliveHosts();
+                        break;
                     }
                 }
             }

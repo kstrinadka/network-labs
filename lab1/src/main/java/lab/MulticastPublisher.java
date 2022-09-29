@@ -34,16 +34,6 @@ public class MulticastPublisher implements Runnable{
         this.port = port;
     }
 
-    /*public void multicast(String multicastMessage) throws IOException {
-        datagramSocket = new DatagramSocket();
-        group = InetAddress.getByName("225.0.0.0");
-        buf = multicastMessage.getBytes();
-
-        DatagramPacket packet
-                = new DatagramPacket(buf, buf.length, group, 1333);
-        datagramSocket.send(packet);
-        datagramSocket.close();
-    }*/
 
     @Override
     public void run() {
@@ -72,8 +62,7 @@ public class MulticastPublisher implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        //datagramSocket.close();
+        
     }
 
 
