@@ -1,6 +1,4 @@
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -16,21 +14,44 @@ public class Client implements Runnable{
 
     private final int serverPort;
 
+    private final Socket clientSocket;
+
 
 
 
     /**
-     * @param fileName - Клиенту передаётся в параметрах относительный или абсолютный путь к файлу,
+     * @param filePath - Клиенту передаётся в параметрах относительный или абсолютный путь к файлу,
      *                 который нужно отправить. Длина имени файла не превышает 4096 байт в кодировке UTF-8.
      *                 Размер файла не более 1 терабайта.
      * @param serverAddress - Клиенту также передаётся в параметрах DNS-имя (или IP-адрес) и номер порта сервера.
      * @param serverPort - номер порта сервера
      */
-    public Client(String fileName, InetAddress serverAddress, int serverPort) {
-        this.fileName = fileName;
+    public Client(Path filePath, InetAddress serverAddress, int serverPort) throws IOException {
+        this.filePath = filePath;
+        this.fileName = filePath.getFileName().toString();
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
-        this.filePath = Path.of(fileName);
+        //this.filePath = Path.of(fileName);
+        this.clientSocket = new Socket("localhost", serverPort);
+    }
+
+    private static void sendFile(Path path, OutputStream outputStream) throws IOException {
+
+        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        int bytes = 0;
+        File file = path.toFile();
+        FileInputStream fileInputStream = new FileInputStream(file);
+
+        /*// send file size
+        dataOutputStream.writeLong(file.length());*/
+
+        // break file into chunks
+        byte[] buffer = new byte[4*1024];
+        while ((bytes=fileInputStream.read(buffer))!=-1){
+            dataOutputStream.write(buffer,0,bytes);
+            dataOutputStream.flush();
+        }
+        fileInputStream.close();
     }
 
 
@@ -38,9 +59,6 @@ public class Client implements Runnable{
      * Типо шаблон для чтения файла и узнавания его размера
      */
     public void readWholeFile() {
-
-
-
         String content = null;
         try {
             content = Files.readString(filePath);
@@ -49,7 +67,6 @@ public class Client implements Runnable{
         }
 
         try {
-
             // size of a file (in bytes)
             long bytes = Files.size(filePath);
             System.out.println(String.format("%,d bytes", bytes));
@@ -58,33 +75,19 @@ public class Client implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         System.out.println(content);
     }
 
 
-    public void sendFileContextToServer (FileContext fileContext) throws IOException {
-        // need host and port, we want to connect to the ServerSocket at port 7777
-        Socket socket = new Socket("localhost", serverPort);
-        System.out.println("Connected!");
-
-        // get the output stream from the socket.
-        OutputStream outputStream = socket.getOutputStream();
-        // create an object output stream from the output stream so we can send an object through it
+    public void sendFileContextToServer (FileContext fileContext, OutputStream outputStream) throws IOException {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-
-        System.out.println("Sending messages to the ServerSocket");
+        System.out.println("Sending fileContext to the ServerSocket");
         objectOutputStream.writeObject(fileContext);
-
-        // не надо закрывать сокет пока файл не передался, но это тестовая хуйня
-        //socket.close();
     }
 
 
     private Long getFileSizeInBytes () {
-
         Long fileSize = null;
-
         try {
             fileSize = Files.size(filePath);
             System.out.println(String.format("%,d bytes", fileSize));
@@ -93,23 +96,27 @@ public class Client implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return fileSize;
     }
+
 
     @Override
     public void run() {
 
+        System.out.println("Connected to Server!");
+
         Long fileSize = getFileSizeInBytes();
         FileContext fileContext = new FileContext(fileName, fileSize);
 
-
         try {
-            sendFileContextToServer(fileContext);
+            OutputStream outputStream = clientSocket.getOutputStream();
+            sendFileContextToServer(fileContext, outputStream);
+
+            sendFile(filePath, outputStream);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
 
 
     }

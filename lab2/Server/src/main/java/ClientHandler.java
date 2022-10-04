@@ -1,13 +1,14 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ClientHandler implements Runnable{
 
 
-
     private final Socket socket;
+
+    private FileContext fileContext;
 
 
     public ClientHandler(Socket socket) {
@@ -15,34 +16,38 @@ public class ClientHandler implements Runnable{
     }
 
 
+    private FileContext getFileContextFromClient(InputStream inputStream) throws IOException, ClassNotFoundException {
 
-    /**
-     * Клиенту передаётся в параметрах относительный или абсолютный путь к файлу,
-     * который нужно отправить. Длина имени файла не превышает 4096 байт в кодировке UTF-8.
-     * Размер файла не более 1 терабайта.
-     * @param fileName
-     */
-    private void checkFileName(String fileName) {
-
-    }
-
-    private FileContext getFileContextFromClient() throws IOException, ClassNotFoundException {
-
-        FileContext fileContext = null;
-
-        // get the input stream from the connected socket
-        InputStream inputStream = socket.getInputStream();
-        // create a DataInputStream so we can read data from it.
         ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+        FileContext fileContext = (FileContext) objectInputStream.readObject();
 
-        fileContext = (FileContext) objectInputStream.readObject();
         System.out.println("fileName = " + fileContext.getFileName());
         System.out.println("fileSize = " + fileContext.getFileSizeInBytes() + " bytes");
 
-        System.out.println("Closing sockets.");
-        //socket.close();
-
         return fileContext;
+    }
+
+
+    private void receiveFile(String fileName, Long fileSizeInBytes, InputStream inputStream) throws IOException {
+
+        Path filePath = Paths.get(fileName);
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        int bytes = 0;
+        long size = fileSizeInBytes;
+
+        File file = filePath.toFile();
+        file.getParentFile().mkdirs();
+        file.createNewFile();
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        byte[] buffer = new byte[4*1024];
+
+        while (size > 0 && (bytes = dataInputStream.read(buffer, 0,
+                                       (int)Math.min(buffer.length, size))) != -1) {
+            fileOutputStream.write(buffer,0,bytes);
+            size -= bytes;      // read upto file size
+        }
+
+        fileOutputStream.close();
     }
 
 
@@ -51,10 +56,12 @@ public class ClientHandler implements Runnable{
 
 
         try {
-            FileContext fileContext = getFileContextFromClient();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
+            InputStream inputStream = socket.getInputStream();
+            this.fileContext = getFileContextFromClient(inputStream);
+
+            receiveFile("./Server/uploads/" + fileContext.getFileName(), fileContext.getFileSizeInBytes(), inputStream);
+
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
 
