@@ -1,3 +1,5 @@
+import exceptions.FailureResponseCode;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -35,15 +37,14 @@ public class Client implements Runnable{
         this.clientSocket = new Socket("localhost", serverPort);
     }
 
-    private static void sendFile(Path path, OutputStream outputStream) throws IOException {
+    private void sendFile(Path path, OutputStream outputStream) throws IOException {
 
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        //DataInputStream socketReader = new DataInputStream(clientSocket.getInputStream());
+
         int bytes = 0;
         File file = path.toFile();
         FileInputStream fileInputStream = new FileInputStream(file);
-
-        /*// send file size
-        dataOutputStream.writeLong(file.length());*/
 
         // break file into chunks
         byte[] buffer = new byte[4*1024];
@@ -79,6 +80,7 @@ public class Client implements Runnable{
     }
 
 
+
     public void sendFileContextToServer (FileContext fileContext, OutputStream outputStream) throws IOException {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
         System.out.println("Sending fileContext to the ServerSocket");
@@ -100,6 +102,22 @@ public class Client implements Runnable{
     }
 
 
+    void checkResponseStatus(DataInputStream inputStream) throws FailureResponseCode, IOException {
+        ResponseCode responseCode = getResponseStatus(inputStream);
+
+        if (responseCode.equals(ResponseCode.SUCCESS_FILE_TRANSFER) ||
+                responseCode.equals(ResponseCode.SUCCESS_FILECONTEXT_TRANSFER)) {
+            System.out.println("Good response code");
+            return;
+        }
+        else throw new FailureResponseCode("bad response");
+
+    }
+    ResponseCode getResponseStatus(DataInputStream inputStream) throws IOException, FailureResponseCode {
+        ResponseCode fileContextTransferResponse = ResponseCode.getResponseByCode(inputStream.readInt());
+        return fileContextTransferResponse;
+    }
+
     @Override
     public void run() {
 
@@ -110,13 +128,17 @@ public class Client implements Runnable{
 
         try {
             OutputStream outputStream = clientSocket.getOutputStream();
+            DataInputStream socketReader = new DataInputStream(clientSocket.getInputStream());
             sendFileContextToServer(fileContext, outputStream);
+
 
             sendFile(filePath, outputStream);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        } /*catch (FailureResponseCode e) {
+            throw new RuntimeException(e);
+        }*/
 
 
     }

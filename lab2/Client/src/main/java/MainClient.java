@@ -18,7 +18,7 @@ public class MainClient {
             throw new RuntimeException(e);
         }
 
-        String fileName = "Client/text";
+        String fileName = "Client/largefile.iso";
         Path filePath = Paths.get(fileName);
         int port = DEFAULT_SERVER_PORT;
 
@@ -30,8 +30,6 @@ public class MainClient {
             System.out.println("error in connecting to server");
             throw new RuntimeException(e);
         }
-
-        //client.readWholeFile();
 
         client.run();
     }
