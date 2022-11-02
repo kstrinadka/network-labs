@@ -1,4 +1,4 @@
-package habr;
+package notlab.habr;
 
 import java.io.*;
 import java.net.HttpURLConnection;

@@ -1,26 +1,36 @@
 import apies.CoordinatesLocations;
-import apies.DescriptionPlaceById;
+import apies.deprecated_httpurlconnection.DescriptionPlaceById;
 import apies.InterestingPlacesByCoordinates;
 import apies.WeatherFromCoordinate;
+import org.json.simple.parser.ParseException;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URISyntaxException;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws URISyntaxException, InterruptedException, IOException, ParseException {
 
-        //callCoordinatesLocations();
-        //callWeatherFromCoordinate();
 
-        //callInterestingPlacesByCoordinates();
+        String response = WeatherFromCoordinate.getWeather();
+        System.out.println(response);
 
-        callDescriptionPlaceById();
+
+       /* try {
+            //callCoordinatesLocations();
+
+            //callWeatherFromCoordinate();
+
+            //callInterestingPlacesByCoordinates();
+
+            //callDescriptionPlaceById();
+
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }*/
+
 
 
     }
@@ -49,11 +59,11 @@ public class Main {
     }
 
 
-    public static void callCoordinatesLocations() {
+    public static void callCoordinatesLocations() throws URISyntaxException, InterruptedException {
         CoordinatesLocations coordinatesLocations = new CoordinatesLocations("Berlin", "de");
 
         try {
-            System.out.println(coordinatesLocations.getCoordinates());
+            System.out.println(coordinatesLocations.getCoordinatesHttpClientSync());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

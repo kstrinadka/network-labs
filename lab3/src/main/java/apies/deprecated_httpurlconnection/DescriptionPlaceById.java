@@ -1,4 +1,4 @@
-package apies;
+package apies.deprecated_httpurlconnection;
 
 
 import java.io.BufferedReader;

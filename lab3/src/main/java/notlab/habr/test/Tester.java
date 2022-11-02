@@ -1,4 +1,4 @@
-package test;
+package notlab.habr.test;
 
 
 

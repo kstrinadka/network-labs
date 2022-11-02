@@ -1,4 +1,4 @@
-package metaweather;
+package notlab.habr.metaweather;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
