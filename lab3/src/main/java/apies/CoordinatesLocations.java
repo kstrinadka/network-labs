@@ -28,21 +28,7 @@ import java.util.concurrent.CompletableFuture;
 public class CoordinatesLocations {
 
     private static final int CONNECTION_TIMEOUT = 2000;
-    final String location;
-    final String locale;    // можно оставить пустым
-
-    final String key = "ac4c90ae-905c-44e3-8061-f29a2982284c";
-
-    public CoordinatesLocations(String location, String locale) {
-        this.location = location;
-        //this.locale = locale;
-        this.locale = "";
-    }
-
-    public CoordinatesLocations(String location) {
-        this.location = location;
-        this.locale = "";
-    }
+    final static String key = "ac4c90ae-905c-44e3-8061-f29a2982284c";
 
 
     public CompletableFuture<String> getCoordinatesHttpClientAsync() throws IOException, URISyntaxException, InterruptedException {
@@ -70,11 +56,11 @@ public class CoordinatesLocations {
 
 
 
-    public String getCoordinatesHttpClientSync() throws IOException, URISyntaxException, InterruptedException {
+    public static String getCoordinatesHttpClientSync(String location) throws IOException, URISyntaxException, InterruptedException {
 
         //URL без параметров
         String urlString = "https://graphhopper.com/api/1/geocode?";
-        URI uri = getURIWithParametrs(urlString);
+        URI uri = getURIWithParametrs(urlString, location);
 
         HttpClient client = HttpClient.newHttpClient();
 
@@ -99,48 +85,16 @@ public class CoordinatesLocations {
         return "";
     }
 
-    public String getCoordinates() throws IOException, URISyntaxException {
-
-        //Для отправки запроса, что GET, что POST, необходимо создать объект URL и открыть на его основе соединение:
-        final URL url = new URL("https://graphhopper.com/api/1/geocode?q=berlin&locale=de&key=ac4c90ae-905c-44e3-8061-f29a2982284c");
-
-
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-        //Далее необходимо сдобрить соединение всеми параметрами:
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setConnectTimeout(CONNECTION_TIMEOUT);
-        con.setReadTimeout(CONNECTION_TIMEOUT);
-
-        con.connect();
-
-
-        //И получить InputStream, откуда уже прочитать все полученные данные.
-        try (final BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-            String inputLine;
-            final StringBuilder content = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            return content.toString();
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            return "";
-        }
-
-    }
-
 
     /**
      * @param uriString - начало адреса без параметров
      * Метод
      */
-    public URI getURIWithParametrs(String uriString) throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
+    public static URI getURIWithParametrs(String uriString, String location) throws UnsupportedEncodingException, MalformedURLException, URISyntaxException {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("q", location);
         parameters.put("locale", "");
-        parameters.put("key", this.key);
+        parameters.put("key", CoordinatesLocations.key);
         String uriWithParametrsString = ParameterStringBuilder.getParamsString(parameters, uriString);
         URI uri = new URI(uriWithParametrsString);
 

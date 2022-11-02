@@ -13,14 +13,10 @@ public class TestParser {
 
     public static void main(String[] args) throws URISyntaxException, InterruptedException, JsonProcessingException, ParseException {
 
-        /*Scanner sc = new Scanner(System.in);
-        System.out.print("Enter a location: ");
-        String location = sc.nextLine();*/
 
         Client client = new Client();
         client.run();
 
-        //client.getListOfPlaces(location);
 
     }
 

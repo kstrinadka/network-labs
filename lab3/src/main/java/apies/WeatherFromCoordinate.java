@@ -2,6 +2,7 @@ package apies;
 
 
 import client.ParameterStringBuilder;
+import jsonHandlers.WeatherFromCoordinateJSONHandler;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -27,20 +28,9 @@ import java.util.Map;
 public class WeatherFromCoordinate {
 
     private static final int CONNECTION_TIMEOUT = 2000;
-    final double lat;
-    final double lon;
 
      final static String key = "69640eaad50baf8c0c1690037c53d281";
 
-    public WeatherFromCoordinate(double lat, double lon) {
-        this.lat = lat;
-        this.lon = lon;
-    }
-
-    public WeatherFromCoordinate() {
-        this.lat = 44.9521;
-        this.lon = 34.1024;
-    }
 
 
     public static String getWeather(String lat, String lon) throws IOException, URISyntaxException, InterruptedException, ParseException {
@@ -71,17 +61,7 @@ public class WeatherFromCoordinate {
             // Fail
         }
 
-        // Считываем json
-        Object obj = new JSONParser().parse(responseJSON); // Object obj = new JSONParser().parse(new FileReader("JSONExample.json"));
-        // Кастим obj в JSONObject
-        JSONObject jo = (JSONObject) obj;
-
-
-        JSONObject main = (JSONObject) jo.get("main");
-        double temperatureInCelsiusDouble = (double) main.get("temp");
-        String temperatureInCelsius = Double.toString(temperatureInCelsiusDouble);
-
-        System.out.println("temperature at this place in Celsius: " + temperatureInCelsius);
+        String temperatureInCelsius = WeatherFromCoordinateJSONHandler.getWeather(responseJSON);
 
         return temperatureInCelsius;
     }
@@ -103,35 +83,4 @@ public class WeatherFromCoordinate {
         return uri;
     }
 
-
-    public static String getWeather() throws IOException {
-
-        //Для отправки запроса, что GET, что POST, необходимо создать объект URL и открыть на его основе соединение:
-        final URL url = new URL("http://api.openweathermap.org/data/2.5/weather?lat=44.9521&lon=34.1024&appid=69640eaad50baf8c0c1690037c53d281");
-        final URL urp = new URL("http://api.openweathermap.org/data/2.5/weather?lon=82.9515&lat=54.9673&key=69640eaad50baf8c0c1690037c53d281");
-        final HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-        //Далее необходимо сдобрить соединение всеми параметрами:
-        con.setRequestMethod("GET");
-        //con.setRequestProperty("Content-Type", "application/json");
-        con.setConnectTimeout(CONNECTION_TIMEOUT);
-        con.setReadTimeout(CONNECTION_TIMEOUT);
-
-        con.connect();
-
-
-        //И получить InputStream, откуда уже прочитать все полученные данные.
-        try (final BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-            String inputLine;
-            final StringBuilder content = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            return content.toString();
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            return "";
-        }
-
-    }
 }
