@@ -17,9 +17,17 @@ public class WeatherFromCoordinateJSONHandler {
 
         JSONObject jo = (JSONObject) obj;
         JSONObject main = (JSONObject) jo.get("main");
-        double temperatureInCelsiusDouble = (double) main.get("temp");
 
-        String temperatureInCelsius = Double.toString(temperatureInCelsiusDouble);
+        String temperatureInCelsius;
+
+        if (main.get("temp").getClass() == Long.class) {
+            Long temperatureInCelsiusLong = (Long) main.get("temp");
+            temperatureInCelsius = Long.toString(temperatureInCelsiusLong);
+        }
+        else {
+            double temperatureInCelsiusDouble = (double) main.get("temp");
+            temperatureInCelsius = Double.toString(temperatureInCelsiusDouble);
+        }
 
         return temperatureInCelsius;
     }

@@ -1,12 +1,15 @@
 package apies;
 
 
+import pojos.interestingPlace.PojoProperties;
+
 import java.io.IOException;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 
 /**
@@ -28,8 +31,6 @@ public class DescriptionPlaceById {
         //URL без параметров
         String urlString = "https://api.opentripmap.com/0.1/en/places/xid/" + xid + "?apikey=5ae2e3f221c38a28845f05b66530af0af94bfb85c3e628b04f9abbf8";
 
-        System.out.println(urlString);
-
         URI uri = URI.create(urlString);
 
         HttpClient client = HttpClient.newHttpClient();
@@ -45,15 +46,15 @@ public class DescriptionPlaceById {
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         if (response.statusCode() == HttpURLConnection.HTTP_OK) {
-            System.out.println(response.statusCode());
-            //System.out.println(response.body());
             return response.body();
         } else {
             // Fail
+            System.out.println("Bad response from server for your interesting place or your request wrong...");
         }
 
         return "";
 
     }
+
 
 }

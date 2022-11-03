@@ -18,6 +18,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}
@@ -31,6 +32,36 @@ public class WeatherFromCoordinate {
 
      final static String key = "69640eaad50baf8c0c1690037c53d281";
 
+
+
+    public static CompletableFuture<String> getWeatherAsync(String lat, String lon) {
+
+        String urlString = "http://api.openweathermap.org/data/2.5/weather?";
+        URI uri = null;
+        try {
+            uri = getURIWithParametrs(urlString, lat, lon);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("accept", "application/json")
+                .build();
+
+
+        CompletableFuture<String> responseCompletableFuture = client
+                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body);
+
+        return responseCompletableFuture;
+    }
 
 
     public static String getWeather(String lat, String lon) throws IOException, URISyntaxException, InterruptedException, ParseException {
@@ -82,5 +113,6 @@ public class WeatherFromCoordinate {
         System.out.println("такой URL получился: " + uri.toString());
         return uri;
     }
+
 
 }

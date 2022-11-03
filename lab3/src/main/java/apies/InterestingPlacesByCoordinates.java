@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * получение списка интересных мест по координатам:
@@ -27,6 +28,35 @@ public class InterestingPlacesByCoordinates {
     private static final int CONNECTION_TIMEOUT = 2000;
     final static String key = "5ae2e3f221c38a28845f05b66530af0af94bfb85c3e628b04f9abbf8";
 
+
+    public static CompletableFuture<String>getPlacesAsync(PojoPoint coordinates) {
+
+        //URL без параметров
+        String urlString = "https://api.opentripmap.com/0.1/en/places/radius?";
+        URI uri = null;
+        try {
+            uri = getURIWithParametrs(urlString, coordinates.getLng(), coordinates.getLat());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(uri)
+                .header("accept", "application/json")
+                .build();
+
+        CompletableFuture<String> responseCompletableFuture = client
+                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body);
+
+        return responseCompletableFuture;
+    }
 
     public static String getPlaces(PojoPoint coordinates) throws IOException, URISyntaxException, InterruptedException {
 
@@ -75,4 +105,6 @@ public class InterestingPlacesByCoordinates {
         System.out.println("такой URL получился: " + uri.toString());
         return uri;
     }
+
+
 }

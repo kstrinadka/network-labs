@@ -2,10 +2,7 @@ package apies;
 
 
 import client.ParameterStringBuilder;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.net.http.HttpClient;
@@ -27,25 +24,22 @@ import java.util.concurrent.CompletableFuture;
  */
 public class CoordinatesLocations {
 
-    private static final int CONNECTION_TIMEOUT = 2000;
     final static String key = "ac4c90ae-905c-44e3-8061-f29a2982284c";
 
 
-    public CompletableFuture<String> getCoordinatesHttpClientAsync() throws IOException, URISyntaxException, InterruptedException {
+    public static CompletableFuture<String> getCoordinatesHttpClientAsync(String location) throws IOException, URISyntaxException, InterruptedException {
 
-        String uriString = "https://graphhopper.com/api/1/geocode?q=berlin&locale=de&key=ac4c90ae-905c-44e3-8061-f29a2982284c";
-        URI uri = new URI(uriString);
+        //URL без параметров
+        String urlString = "https://graphhopper.com/api/1/geocode?";
+        URI uri = getURIWithParametrs(urlString, location);
 
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
+                .header("accept", "application/json")
                 .build();
 
-        /**
-         * Метод sendAsync() возвращает объект CompletableFuture,
-         * который внутри себя содержит HttpResponse, который внутри себя содержит строку, которую вернет сервер.
-         */
         CompletableFuture<String> responseCompletableFuture = client
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(HttpResponse::body);
@@ -80,6 +74,7 @@ public class CoordinatesLocations {
             return response.body();
         } else {
             // Fail
+            System.out.println("");
         }
 
         return "";

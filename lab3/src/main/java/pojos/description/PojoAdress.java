@@ -46,15 +46,15 @@ public class PojoAdress {
     public String toString() {
         return "PojoAdress{" + "\n" +
                 "city='" + city + '\'' + "\n" +
-                ", road='" + road + '\'' + "\n" +
-                ", state='" + state + '\'' + "\n" +
-                ", county='" + county + '\'' + "\n" +
-                ", suburb='" + suburb + '\'' + "\n" +
-                ", country='" + country + '\'' + "\n" +
-                ", postcode='" + postcode + '\'' + "\n" +
-                ", country_code='" + country_code + '\'' + "\n" +
-                ", city_district='" + city_district + '\'' + "\n" +
-                ", neighbourhood='" + neighbourhood + '\'' + "\n" +
+                "road='" + road + '\'' + "\n" +
+                "state='" + state + '\'' + "\n" +
+                "county='" + county + '\'' + "\n" +
+                "suburb='" + suburb + '\'' + "\n" +
+                "country='" + country + '\'' + "\n" +
+                "postcode='" + postcode + '\'' + "\n" +
+                "country_code='" + country_code + '\'' + "\n" +
+                "city_district='" + city_district + '\'' + "\n" +
+                "neighbourhood='" + neighbourhood + '\'' + "\n" +
                 '}';
     }
 }

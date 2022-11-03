@@ -32,30 +32,9 @@ import java.util.concurrent.Executors;
 
 public class Client implements Runnable {
 
-    Executor executor = Executors.newFixedThreadPool(10);
+    //Executor executor = Executors.newFixedThreadPool(10);
 
-    List<CompletableFuture<String>> requests = new ArrayList<>();
-
-
-    public List<PojoOnePlaceFromName> getListOfPlaces(String address) throws URISyntaxException, InterruptedException, JsonProcessingException, ParseException {
-
-        String jsonListOfPlaces = callCoordinatesLocations(address);
-        List<PojoOnePlaceFromName> listOfPlaces = CoordinatesLocationsJSONHandler.getListOfPlaces(jsonListOfPlaces);
-
-        return listOfPlaces;
-    }
-
-    public String callCoordinatesLocations(String location) throws URISyntaxException, InterruptedException {
-        String jsonResponse;
-
-        try {
-            jsonResponse = CoordinatesLocations.getCoordinatesHttpClientSync(location);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return jsonResponse;
-    }
+    //List<CompletableFuture<String>> requests = new ArrayList<>();
 
 
     @Override
@@ -64,21 +43,9 @@ public class Client implements Runnable {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter a location: ");
         String location = sc.nextLine();
-        List<PojoOnePlaceFromName> listOfPlaces;
 
-        try {
+        List<PojoOnePlaceFromName> listOfPlaces = this.getListOfPlaces(location);
 
-            listOfPlaces = this.getListOfPlaces(location);
-
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
 
         if (listOfPlaces.isEmpty() || listOfPlaces == null){
             System.out.println("we can't find any locations sorry");
@@ -92,6 +59,7 @@ public class Client implements Runnable {
         System.out.println("Choose location from list: ");
         String locationName = sc.nextLine();
 
+        // 1 вызов API (получение координат и списка мест)
         PojoPoint coordinates = this.chooseLocationByName(locationName, listOfPlaces);
 
         if (coordinates == null){
@@ -101,34 +69,13 @@ public class Client implements Runnable {
 
         System.out.println("you choosed place with coordinates: " + coordinates.getLat() + ", " + coordinates.getLng());
 
-        String currentWeather = null;
-        try {
-            currentWeather = this.getWeatherFromCoordinates(coordinates);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        // 2 вызов API (получение погоды по координатам)
+        String currentWeather = this.getWeatherFromCoordinates(coordinates);
 
         System.out.println("temperature at this place in Celsius: " + currentWeather);
 
-        List<PojoProperties> pojoInterestingPlaceList;
-
-        try {
-            pojoInterestingPlaceList = getInterestingPlacesByCoordinates(coordinates);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        // 3 вызов API (получение списка интересных мест по координатам)
+        List<PojoProperties> pojoInterestingPlaceList = getInterestingPlacesByCoordinates(coordinates);
 
         if (pojoInterestingPlaceList == null) {
             System.out.println("we can't get list of interesting places. Sorry...");
@@ -153,31 +100,53 @@ public class Client implements Runnable {
         System.out.println("you choosed : " + interestingPlace.getName());
 
         String xidOfPlace = interestingPlace.getXid();
-        PojoDescription description;
 
-        try {
-            description = getDescriptionByXid(xidOfPlace);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        // 4 вызов API (получение описания интересного места)
+        PojoDescription description = getDescriptionByXid(xidOfPlace);
+
 
         if (description == null){
             System.out.println("Sorry. Smth went wrong... We can't get description for this place");
             return;
         }
 
-        
+
         System.out.println("description: " + description);
 
     }
 
-    private PojoDescription getDescriptionByXid(String xidOfPlace) throws IOException, InterruptedException, ParseException {
 
-        String descriptionJSON = DescriptionPlaceById.getDescription(xidOfPlace);
+
+    public List<PojoOnePlaceFromName> getListOfPlaces(String location) {
+
+        String jsonResponse;
+        try {
+            jsonResponse = CoordinatesLocations.getCoordinatesHttpClientSync(location);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<PojoOnePlaceFromName> listOfPlaces = CoordinatesLocationsJSONHandler.getListOfPlaces(jsonResponse);
+
+        return listOfPlaces;
+    }
+
+
+
+    private PojoDescription getDescriptionByXid(String xidOfPlace) {
+
+        String descriptionJSON = null;
+        try {
+            descriptionJSON = DescriptionPlaceById.getDescription(xidOfPlace);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         PojoDescription pojoDescription  = DescriptionPlaceByIdJSONHandler.getDescriptionFromJSON(descriptionJSON);
 
         return pojoDescription;
@@ -194,12 +163,16 @@ public class Client implements Runnable {
         return null;
     }
 
-    private List<PojoProperties> getInterestingPlacesByCoordinates(PojoPoint coordinates) throws URISyntaxException, InterruptedException, ParseException, JsonProcessingException {
+    private List<PojoProperties> getInterestingPlacesByCoordinates(PojoPoint coordinates) {
 
         String jsonListOfPlaces;
         try {
             jsonListOfPlaces = InterestingPlacesByCoordinates.getPlaces(coordinates);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
@@ -214,11 +187,22 @@ public class Client implements Runnable {
 
 
 
-    private String getWeatherFromCoordinates(PojoPoint coordinates) throws IOException, URISyntaxException, InterruptedException, ParseException {
+    private String getWeatherFromCoordinates(PojoPoint coordinates) {
         String lat = coordinates.getLat();
         String lon = coordinates.getLng();
 
-        String response = WeatherFromCoordinate.getWeather(lat, lon);
+        String response = null;
+        try {
+            response = WeatherFromCoordinate.getWeather(lat, lon);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         return response;
     }
 
@@ -231,4 +215,7 @@ public class Client implements Runnable {
         }
         return null;
     }
+
+
+
 }
